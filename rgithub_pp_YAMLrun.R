@@ -16,18 +16,19 @@ source("BQSearch/gh_login.R")
 # ctx$user$id
 
 
-## cran query examples
+## Gitenberg [YAML] query examples
 
-r_pack_search = 'Package Title Version Description Author filename:"DESCRIPTION" path:"/"'
+# giten_search = 'user:gitenberg filename:"metadata.yaml"'
+giten_search = 'gitenberg filename:"metadata.yaml"'
 
-spec_search_term = "text mining"
-spec_search_term = "hornik"
-spec_search_term = "tensorflow"
-spec_search_term = "hadley wickham"
-spec_search_term = "github api"
-spec_search_term = "achim zeileis"
+search_query = giten_search
 
-( search_query = paste(spec_search_term, r_pack_search) )
+spec_search_term = "king arthur"
+spec_search_term = "tolstoy"
+spec_search_term = "sherlock holmes"
+spec_search_term = "shakespeare"
+
+( search_query = paste(spec_search_term, giten_search) )
 
 
 
@@ -58,11 +59,11 @@ boxplot(sr$scores)
 
 ### II: Parser layer - V3 version
 
-# cran/dcf
-# system.time( parser_res <- dcf.search.parser(sr, error_to_results = FALSE) )
+# yaml
+# system.time( parser_res <- yaml.search.parser(sr, error_to_results = FALSE) )
 
 # for further filtering of 'sr$full_search'
-system.time( parser_res <- dcf.search.parser(sr, error_to_results = TRUE) )
+system.time( parser_res <- yaml.search.parser(sr, error_to_results = TRUE) )
 
 
 # some parser evaluation
@@ -76,8 +77,6 @@ parser_res$score_vec
 # error evaluation if "error_to_results = TRUE"
 parser_res$path_vec[!parser_res$ok_vec]
 parser_res$path_vec[parser_res$ok_vec]
-# test: äq. zu Zeile zuvor
-parser_res$path_vec[which(parser_res$ok_vec)]
 # good list
 parser_res$parsed_list[which(parser_res$ok_vec)]
 # bad list
@@ -96,27 +95,20 @@ Metainfos = parser_res$parsed_list[which(parser_res$ok_vec)]
 
 length(Metainfos)
 
-# check bad meta infos
-Metainfos[which(!parser_res$ok_vec)]
-
 
 ### some Meta analysis (optional)
 
 metadata.analysis(Metainfos)
 
-# cran
-metadata.analysis(Metainfos, cran_dfield_list)
+# gitenberg
+metadata.analysis(Metainfos, gitenberg_dfield_list)
 
 
 ## some Meta processing/projection
 
-meta_df_p = meta_dfield.projection(Metainfos, cran_dfield_list, c("p", "d", "t"))
-meta_df_p = meta_dfield.projection(Metainfos, cran_dfield_list, c("p", "t", "v", "l", "ty"))
-meta_df_p = meta_dfield.projection(Metainfos, cran_dfield_list, c("p", "v", "l", "m"))
-meta_df_p = meta_dfield.projection(Metainfos, cran_dfield_list, c("p", "v", "m"))
-meta_df_p = meta_dfield.projection(Metainfos, cran_dfield_list, c("p", "v", "a"))
-
-( meta_df_p_frame = as.data.frame(meta_df_p) )
+meta_df_p = meta_dfield.projection(Metainfos, gitenberg_dfield_list, c("t", "i", "iss"))
+meta_df_p = meta_dfield.projection(Metainfos, gitenberg_dfield_list, c("t", "i", "iss", "s"))
+meta_df_p = meta_dfield.projection(Metainfos, gitenberg_dfield_list, c("t", "r", "iss", "s"))
 
 
 ## Generalization
@@ -136,17 +128,16 @@ meta_df_p_frame[sample(nrow(meta_df_p_frame), k),]
 
 ### IV: to TManalyzer
 
-# smart cran
-meta_weight = c(d = 9, t = 4, p = 1, a = 3, l = 1, m = 4)
+# smart gitenberg
+meta_weight = c(d = 9, s = 5, c = 4, t = 2, p = 1)
 
 # from parsed Metainfo
-( doc_names	= sapply( Metainfos, function(meta){ meta.getDField(meta, cran_dfield_list, "p") } ) )
+( doc_names	= sapply( Metainfos, function(meta){ meta.getDField(meta, gitenberg_dfield_list, "t") } ) )
 
-# tests
-# t_vec = meta.list.extract(Metainfos[1:3], doc_names[1:3], cran_dfield_list, meta_weight)
 
 # real extraction
-t_vec = meta.list.extract(Metainfos, doc_names, cran_dfield_list, meta_weight)
+# gitenberg
+t_vec = meta.list.extract(Metainfos, doc_names, gitenberg_dfield_list, meta_weight)
 
 
 # check
@@ -156,8 +147,8 @@ t_vec$doc_names
 
 
 # add more stopwords by hand
-more_stopwords = c("instal", "you", "your", "sudo", "will", "librari", "how", "run", "ansibl", "user", "our", "width", "each", "file",
-					"have", "youll", "need", "like", "want", "not", "let", "pleas", "famili", "ctb", "email", "role", "aut", "persongiven")
+more_stopwords = c("instal", "you", "your", "sudo", "will", "librari", "how", "run", "ansibl", "user", "our", "width", "each", "file", "his",
+					"wikipedia", "gitenberg", "gutenbergagentid", "httpwwwgutenbergorgag", "url", "publish")
 
 # system.time( A_list <- tm.create.models(t_vec, models = c("lsa")) )
 # system.time( A_list <- tm.create.models(t_vec, stopwords_select = "cran", models = c("tt", "lsa")) )
@@ -173,7 +164,8 @@ A = A_list$lsa
 
 d = dist(A)
 
-k = 8
+
+k = 5
 # k = 16
 # k = 24
 # k = 40
@@ -191,7 +183,7 @@ system.time( cl_r <- D3Visu_ClusterTopic_kmeans(A, k, 5, mds_plot = FALSE, topic
 system.time( cl_r <- D3Visu_ClusterTopic_pam(A, k, 5, mds_plot = F, topic_print = TRUE, d_mat = d) )
 
 
-## CRAN output
+## gitenberg output
 
 ( gh_org = sr$gh_login[which(parser_res$ok_vec)] )
 ( full_link = sapply( sr$full_search[which(parser_res$ok_vec)], function(item){ item$repository$html_url } ) )
@@ -200,19 +192,16 @@ c(length(gh_org), length(full_link)) == length(Metainfos)
 
 
 # Export to JSON using the topic labels generated by the TM process + D3Visu_ClusterTopic
-export_l = createD3_PreJSON_CRAN(Metainfos, gh_org, full_link, cl_r$cl_topic_vec, cl_r$cluster)
+export_l = createD3_PreJSON_Gitenberg(Metainfos, gh_org, full_link, cl_r$cl_topic_vec, cl_r$cluster)
 
 d_out = list(nodes = export_l, links = list(), search_query = search_query)
 
-# message_str = "LSA"
-# message_str = "LSA_t2"
-# message_str = "test1"
-# message_str = "test2"
-# message_str = "gh_api"
-# message_str = "zeileis"
+# message_str = "sherlock_holmes"
+# message_str = "top_250"
+# message_str = "shakespeare"
 
 
-( fname = paste("BQsearch/output/cran_github_", tolower(message_str), "_", k, "cl.json", sep="") )
+( fname = paste("BQsearch/output/gitenberg_github_", tolower(message_str), "_", k, "cl.json", sep="") )
 
 
 save_JSON(d_out, fname, showPretty = TRUE)
