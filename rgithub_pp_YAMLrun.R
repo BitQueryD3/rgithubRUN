@@ -199,6 +199,7 @@ d_out = list(nodes = export_l, links = list(), search_query = search_query)
 # message_str = "sherlock_holmes"
 # message_str = "top_250"
 # message_str = "shakespeare"
+# message_str = "king_arthur"
 
 
 ( fname = paste("BQsearch/output/gitenberg_github_", tolower(message_str), "_", k, "cl.json", sep="") )
