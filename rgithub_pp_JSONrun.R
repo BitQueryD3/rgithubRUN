@@ -44,6 +44,7 @@ php_search = 'name description authors require php filename:"composer.json" path
 spec_search_term = ""
 spec_search_term = "laravel"
 spec_search_term = "api"
+spec_search_term = "aws sdk"
 
 ( search_query = paste(spec_search_term, php_search) )
 
@@ -179,7 +180,8 @@ t_vec$doc_names
 
 
 # add more stopwords by hand
-more_stopwords = c("instal", "you", "your", "sudo", "will", "librari", "how", "run", "ansibl", "user", "our", "width", "each", "file")
+more_stopwords = c("instal", "you", "your", "sudo", "will", "librari", "how", "run", "ansibl", "user", "our", "width", "each", "file",
+					"youremailher", "emailexamplecom")
 
 # system.time( A_list <- tm.create.models(t_vec, models = c("lsa")) )
 # system.time( A_list <- tm.create.models(t_vec, stopwords_select = "cran", models = c("tt", "lsa")) )
@@ -200,6 +202,7 @@ k = 16
 # k = 24
 # k = 40
 # k = 48
+# k = 50
 # k = 64
 
 # graphics.off()
@@ -237,7 +240,8 @@ d_out = list(nodes = export_l, links = list(), search_query = search_query)
 # message_str = "minify_javascript"
 # message_str = "laravel_php"
 # message_str = "google_cloud"
-# message_str = "top_250"
+# message_str = "api"
+# message_str = "aws_sdk"
 
 
 ( fname = paste("BQsearch/output/npm_github_", tolower(message_str), "_", k, "cl.json", sep="") )
@@ -247,4 +251,8 @@ d_out = list(nodes = export_l, links = list(), search_query = search_query)
 
 
 save_JSON(d_out, fname, showPretty = TRUE)
+
+
+# UTF-8
+save_JSON(d_out, fname, showPretty = TRUE, utf8 = TRUE)
 
